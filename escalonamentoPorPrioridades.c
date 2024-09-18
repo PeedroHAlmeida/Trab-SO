@@ -12,6 +12,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
+
 
 typedef struct processo_{
     int prioridade;
@@ -37,25 +39,34 @@ void inciaFila(Fila *fila){
     fila->anterior = NULL;
 }
 
+int filaVazia(Fila *fila)
+{
+    return (fila->proximo == NULL);
+}
+
 void adicionaFila(Fila *fila, Processo novoProcesso){
 
     No *novoNo = (No*)malloc(sizeof(No));
     
-    switch (novoProcesso.prioridade)
+    novoNo->processo = novoProcesso;
+    novoNo->prox = NULL;
+
+    if (filaVazia(fila))
     {
-    case 1:
-        if (fila->anterior == NULL){
-            novoNo->processo = novoProcesso;
-            novoNo->prox = NULL;
-        }
-        
-        break;
-    
-    default:
-        break;
+        fila->proximo = novoNo;
+        fila->anterior = novoNo;
     }
+    else
+    {
+        fila->anterior->prox = novoNo;
+        fila->anterior = novoNo;
+    }
+}
+
+Processo *removeFila(){
 
 }
+
 
 void main()
 {
@@ -76,27 +87,50 @@ void main()
     inciaFila(&prioridade1);
 
     int numProcesso = 1;
-    while (1)
+    int condicao = 1;
+    while (condicao)
     {
-        if ((rand() % 100) + 1 < 15)
+        if (1)//(rand() % 100) + 1 < 15)
         {
-            Processo novoProcesso = {(rand() % 4) + 1, numProcesso, (rand() % 20) + 1};
+            Processo novoProcesso = {(rand() % 4) + 1, numProcesso, (rand() % 15) + 1};
             switch (novoProcesso.prioridade)
             {
-            case 1:
-                adicionaFila(&prioridade1, novoProcesso);
-                break;
-            case 2:
-                adicionaFila(&prioridade2, novoProcesso);
+            case 4:
+                adicionaFila(&prioridade4, novoProcesso);
+                imprimirFila(&prioridade4);
+                Processo *exec = removeFila();
+                if (exec == NULL){
+                    printf("Fila de prioridade 4 vazia");
+
+                }else if(exec->tamPrcss <= 0){
+                    printf("Processo finalizado");
+                    free(exec);
+                    
+                }else{
+                    printf("Processo não finalizado e adicionado ao final da fila");
+                    adicionaFila(&prioridade4, *exec);
+                }
+                sleep(1);
                 break;
             case 3:
                 adicionaFila(&prioridade3, novoProcesso);
+                imprimirFila(&prioridade3);
+                sleep(1);
                 break;
-            case 4:
-                adicionaFila(&prioridade4, novoProcesso);
+            case 2:
+                adicionaFila(&prioridade2, novoProcesso);
+                imprimirFila(&prioridade2);
+                sleep(1);
+                break;
+            case 1:
+                adicionaFila(&prioridade1, novoProcesso);
+                printf("prioridade 1");
+                imprimirFila(&prioridade1);
+                sleep(1);
                 break;
             default:
-                printf("Erro na prioridade do processo");
+                condicao = 0;
+                printf("Erro na prioridade do processo\n");
                 break;
             }
             
@@ -104,11 +138,7 @@ void main()
 
         }
         
-        
-        {
-            /* code */
-        }
-        
+        numProcesso++;
         
     }
     
