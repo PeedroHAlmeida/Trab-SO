@@ -81,6 +81,21 @@ void executa(Processo *exec, int quantum) {
     exec->tamanho -= quantum;
 }
 
+void executarProcesso(Processo *exec, int *numPrioridadeExec, int quantum, Fila *prioridade, int temporizador) {
+    if (exec->tamanho <= quantum) {
+        printf("Processo %d executado e finalizado\n\n", exec->numero);
+        free(exec);  // Liberar memória após a execução final
+    } else {
+        printf("Tempo gasto até agora: %d | Processo %d de prioridade %d com tamanho %d em execução\n", temporizador, exec->numero, exec->prioridade, exec->tamanho);
+        executa(exec, quantum);  // Chama a função executa corretamente
+        if (exec->prioridade == *numPrioridadeExec){
+        adicionaFila(prioridade, *exec);  // Passa o ponteiro corretamente
+        } //preciso do cafe agora
+        printf("Processo %d adicionado novamente à fila de prioridade %d\n\n", exec->numero, *numPrioridadeExec);
+    }
+}
+
+
 void imprimirFila(Fila *fila)
 {
     if (filaVazia(fila))
@@ -118,8 +133,8 @@ int main() {
 
     while (1) {
         sleep(1);
+        temporizador++;
         if ((rand() % 100) + 1 < 99) {
-            temporizador++;
             numProcesso++;
             Processo novoProcesso = {(rand() % 4) + 1, numProcesso, (rand() % 15) + 1, NULL};
             printf("Novo processo, prioridade: %d, numProcesso: %d, tamanho: %d, prox: %p\n", novoProcesso.prioridade, novoProcesso.numero, novoProcesso.tamanho, (void *)novoProcesso.prox);
@@ -133,8 +148,6 @@ int main() {
             } else {
                 adicionaFila(&prioridade1, novoProcesso);
             }
-        } else {
-            temporizador++;
         }
 
         printf("Prioridade 4: ");
@@ -147,235 +160,27 @@ int main() {
         imprimirFila(&prioridade1);
         printf("\n\n");
 
-        switch (numPrioridadeExec) {
-            case 4:
-                exec = removeDaFila(&prioridade4);
-                if (exec == NULL) {
-                    printf("Fila de prioridade 4 vazia\n");
-                    if (filaVazia(&prioridade3)) {
-                        printf("Fila de prioridade 3 vazia\n");
-                        if (filaVazia(&prioridade2)) {
-                            printf("Fila de prioridade 2 vazia\n");
-                            if (filaVazia(&prioridade1)) {
-                                printf("Fila de prioridade 1 vazia. Nenhum processo para ser executado\n\n");
-                            } else {
-                                exec = removeDaFila(&prioridade1);
-                                numPrioridadeExec = 1;
-                                if (exec->tamanho <= quantum) {
-                                    printf("Processo %d executado e finalizado\n\n", exec->numero);
-                                    free(exec);
-                                } else {
-                                    executa(exec, quantum);  // Passa o ponteiro exec corretamente
-                                    printf("Processo %d executado e adicionado a fila novamente\n\n", exec->numero);
-                                    adicionaFila(&prioridade1, *exec);
-                                }
-                            }
-                        } else {
-                            exec = removeDaFila(&prioridade2);
-                            numPrioridadeExec = 2;
-                            if (exec->tamanho <= quantum) {
-                                printf("Processo %d executado e finalizado\n\n", exec->numero);
-                                free(exec);
-                            } else {
-                                executa(exec, quantum);  // Passa o ponteiro exec corretamente
-                                printf("Processo %d executado e adicionado a fila novamente\n\n", exec->numero);
-                                adicionaFila(&prioridade2, *exec);
+        if (!filaVazia(&prioridade4)) {
+            exec = removeDaFila(&prioridade4);
+            numPrioridadeExec = 4;
+            executarProcesso(exec, &numPrioridadeExec, quantum, &prioridade4, temporizador);
+        }else if (!filaVazia(&prioridade3)) {
+            exec = removeDaFila(&prioridade3);
+            numPrioridadeExec = 3;
+            executarProcesso(exec, &numPrioridadeExec, quantum, &prioridade3, temporizador);
+        }else if (!filaVazia(&prioridade2)) {
+            numPrioridadeExec = 2;
+            exec = removeDaFila(&prioridade2);
+            executarProcesso(exec, &numPrioridadeExec, quantum, &prioridade2, temporizador); 
+        }else {
+            numPrioridadeExec = 1;
+            exec = removeDaFila(&prioridade1);
+            executarProcesso(exec, &numPrioridadeExec, quantum, &prioridade1, temporizador); 
+        }
 
-                            }
-                        }
-                    } else {
-                        exec = removeDaFila(&prioridade3);
-                        numPrioridadeExec = 3;
-                        if (exec->tamanho <= quantum) {
-                            printf("Processo %d executado e finalizado\n\n", exec->numero);
-                            free(exec);
-                        } else {
-                            executa(exec, quantum);  // Passa o ponteiro exec corretamente
-                            printf("Processo %d executado e acionado a fila novamente\n\n", exec->numero);
-                            adicionaFila(&prioridade3, *exec);
-
-                        }
-                    }
-                } else if (exec->tamanho <= quantum) {
-                    printf("Processo %d executado e finalizado\n\n", exec->numero);
-                    free(exec);  // Liberar memória após a execução final
-                } else {
-                    executa(exec, quantum);  // Chama a função executa corretamente
-                    printf("Tempo gasto até agora: %d | Processo %d de prioridade %d com tamanho %d em execução\n\n", temporizador, exec->numero, exec->prioridade, exec->tamanho);
-                    adicionaFila(&prioridade4, *exec);  // Re-adiciona o ponteiro exec na fila
-                }
-                break;
-
-            case 3:
-                if (!filaVazia(&prioridade4)) {
-                    exec = removeDaFila(&prioridade4);
-                    numPrioridadeExec = 4;
-                    if (exec->tamanho <= quantum) {
-                        printf("Processo %d executado e finalizado\n\n", exec->numero);
-                        free(exec);
-                    } else {
-                        executa(exec, quantum);  // Chama a função executa corretamente
-                        printf("Tempo gasto até agora: %d | Processo %d de prioridade %d com tamanho %d em execução\n\n", temporizador, exec->numero, exec->prioridade, exec->tamanho);
-                        adicionaFila(&prioridade4, *exec);  // Re-adiciona o ponteiro exec na fila
-                    }
-                } else {
-                    printf("Fila de prioridade 4 vazia\n");
-                    exec = removeDaFila(&prioridade3);
-                    if (exec == NULL) {
-                        printf("Fila de prioridade 3 vazia\n");
-                        if (filaVazia(&prioridade2)) {
-                            printf("Fila de prioridade 2 vazia\n");
-                            if (filaVazia(&prioridade1)) {
-                                printf("Fila de prioridade 1 vazia. Nenhum processo para ser executado\n");
-                            }else{
-                                exec = removeDaFila(&prioridade1);
-                                numPrioridadeExec = 1;
-                                if (exec->tamanho <= quantum) {
-                                    printf("Processo %d executado e finalizado\n\n", exec->numero);
-                                    free(exec);
-                                } else {
-                                    executa(exec, quantum);  // Passa o ponteiro exec corretamente
-                                    printf("Processo %d executado e adicionado a fila novamente\n\n", exec->numero);
-                                    adicionaFila(&prioridade1, *exec);
-                            }
-                            }
-                        } else {
-                            exec = removeDaFila(&prioridade2);
-                            numPrioridadeExec = 2;
-                            if (exec->tamanho <= quantum) {
-                                printf("Processo %d executado e finalizado\n\n", exec->numero);
-                                free(exec);
-                            } else {
-                                executa(exec, quantum);  // Passa o ponteiro exec corretamente
-                                printf("Processo %d executado e adicionado a fila novamente\n\n", exec->numero);
-                                adicionaFila(&prioridade2, *exec);
-                            }
-                        }
-                    } else if (exec->tamanho <= quantum) {
-                        printf("Processo %d executado e finalizado\n\n", exec->numero);
-                        free(exec);
-                    } else {
-                        executa(exec, quantum);
-                        adicionaFila(&prioridade3, *exec);
-                        printf("Tempo gasto até agora: %d | Processo %d de prioridade %d com tamanho %d em execução\n\n", temporizador, exec->numero, exec->prioridade, exec->tamanho);
-                    }
-                }
-                break;
-
-            case 2:
-                if (!filaVazia(&prioridade4)) {
-                    exec = removeDaFila(&prioridade4);
-                    numPrioridadeExec = 4;
-                    if (exec->tamanho <= quantum) {
-                        printf("Processo %d executado e finalizado\n\n", exec->numero);
-                        free(exec);
-                    } else {
-                        executa(exec, quantum);  // Chama a função executa corretamente
-                        printf("Tempo gasto até agora: %d | Processo %d de prioridade %d com tamanho %d em execução\n\n", temporizador, exec->numero, exec->prioridade, exec->tamanho);
-                        adicionaFila(&prioridade4, *exec);  // Re-adiciona o ponteiro exec na fila
-                    }
-                } else if (!filaVazia(&prioridade3)) {
-                    printf("Fila de prioridade 4 vazia\n");
-                    exec = removeDaFila(&prioridade3);
-                    numPrioridadeExec = 3;
-                    if (exec->tamanho <= quantum) {
-                        printf("Processo %d executado e finalizado\n\n", exec->numero);
-                        free(exec);
-                    } else {
-                        executa(exec, quantum);  // Chama a função executa corretamente
-                        printf("Tempo gasto até agora: %d | Processo %d de prioridade %d com tamanho %d em execução\n\n", temporizador, exec->numero, exec->prioridade, exec->tamanho);
-                        adicionaFila(&prioridade3, *exec);  // Re-adiciona o ponteiro exec na fila
-                    }
-                } else {
-                    printf("Fila de prioridade 4 vazia\n");
-                    printf("Fila de prioridade 3 vazia\n");
-                    exec = removeDaFila(&prioridade2);
-                    if (exec == NULL) {
-                        printf("Fila de prioridade 2 vazia\n");
-                        if (filaVazia(&prioridade1)) {
-                            printf("Fila de prioridade 1 vazia\n\n");
-                        } else {
-                            exec = removeDaFila(&prioridade1);
-                            numPrioridadeExec = 1;
-                            if (exec->tamanho <= quantum) {
-                                printf("Processo %d executado e finalizado\n\n", exec->numero);
-                                free(exec);
-                            } else {
-                                executa(exec, quantum);  // Passa o ponteiro exec corretamente
-                                printf("Processo %d executado e dicionado a fila novamente\n\n", exec->numero);
-                                adicionaFila(&prioridade1, *exec);
-                            }
-                        }
-                    } else if (exec->tamanho <= quantum) {
-                        printf("Processo %d executado e finalizado\n\n", exec->numero);
-                        free(exec);
-                    } else {
-                        executa(exec, quantum);
-                        printf("Tempo gasto até agora: %d | Processo %d de prioridade %d com tamanho %d em execução\n\n", temporizador, exec->numero, exec->prioridade, exec->tamanho);
-                        adicionaFila(&prioridade2, *exec);
-                    }
-                }
-                break;
-            case 1:
-                if (!filaVazia(&prioridade4)) {
-                    exec = removeDaFila(&prioridade4);
-                    numPrioridadeExec = 4;
-                    if (exec->tamanho <= quantum) {
-                        printf("Processo %d executado e finalizado\n\n", exec->numero);
-                        free(exec);
-                    } else {
-                        executa(exec, quantum);  // Chama a função executa corretamente
-                        printf("Tempo gasto até agora: %d | Processo %d de prioridade %d com tamanho %d em execução\n\n", temporizador, exec->numero, exec->prioridade, exec->tamanho);
-                        adicionaFila(&prioridade4, *exec);  // Re-adiciona o ponteiro exec na fila
-                    }
-                } else if (!filaVazia(&prioridade3)) {
-                    printf("Fila de prioridade 4 vazia\n");
-                    exec = removeDaFila(&prioridade3);
-                    numPrioridadeExec = 3;
-                    if (exec->tamanho <= quantum) {
-                        printf("Processo %d executado e finalizado\n\n", exec->numero);
-                        free(exec);
-                    } else {
-                        executa(exec, quantum);  // Chama a função executa corretamente
-                        printf("Tempo gasto até agora: %d | Processo %d de prioridade %d com tamanho %d em execução\n\n", temporizador, exec->numero, exec->prioridade, exec->tamanho);
-                        adicionaFila(&prioridade3, *exec);  // Re-adiciona o ponteiro exec na fila
-                    }
-                } else if (!filaVazia(&prioridade2)) {
-                    printf("Fila de prioridade 4 vazia\n");
-                    printf("Fila de prioridade 3 vazia\n");
-                    exec = removeDaFila(&prioridade2);
-                    numPrioridadeExec = 2;
-                    if (exec->tamanho <= quantum) {
-                        printf("Processo %d executado e finalizado\n\n", exec->numero);
-                        free(exec);
-                    } else {
-                        executa(exec, quantum);  // Chama a função executa corretamente
-                        printf("Tempo gasto até agora: %d | Processo %d de prioridade %d com tamanho %d em execução\n\n", temporizador, exec->numero, exec->prioridade, exec->tamanho);
-                        adicionaFila(&prioridade2, *exec);  // Re-adiciona o ponteiro exec na fila
-                    }
-                } else {
-                    printf("Fila de prioridade 4 vazia\n");
-                    printf("Fila de prioridade 3 vazia\n");
-                    printf("Fila de prioridade 2 vazia\n");
-                    exec = removeDaFila(&prioridade1);
-                    if (exec == NULL) {
-                        printf("Fila de prioridade 1 vazia. Nenhum processo para ser executado.\n\n");
-                    } else if (exec->tamanho <= quantum) {
-                        printf("Processo %d executado e finalizado\n\n", exec->numero);
-                        free(exec);
-                    } else {
-                        executa(exec, quantum);
-                        printf("Tempo gasto até agora: %d | Processo %d de prioridade %d com tamanho %d em execução\n\n", temporizador, exec->numero, exec->prioridade, exec->tamanho);
-                        adicionaFila(&prioridade2, *exec);
-                    }
-                }
-
-                break;
-            default:
-                printf("Filas de prioridade vazias\n\n");
-                break;
+        if (temporizador % 10 == 0){
+            sobePrioridade(&prioridade4, &prioridade3, &prioridade2, &prioridade1);
         }
     }
-
     return 0;
 }
