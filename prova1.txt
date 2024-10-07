@@ -1,0 +1,31 @@
+resolvendo questoes da prova 1
+
+1) Proecsso - processo é um programa em execução, ativo para o sistema operacional
+Programa - conjunto de instruções estatico que pode ser executado pelo computador, passivo para o sistema 
+operacional
+Theread - Theread são linhas de execução de um processo, podendo cada processo ter mais de uma compartilham 
+o mesmo espaço de memoria mas são independentes
+Condição de disputa - é quando dois ou mais processos tentam disputar os mesmos recursos ao mesmo tempo
+Região crítica - a regiao critica seria a parte em código que disputa os mesmos recursos da condição de 
+disputa
+Exclusão mutua - a exclusao mutua faz com que dois processos não acessem o mesmo recurso ao mesmo tempo, 
+fazendo com que não ocorra uma condiçao de disputa
+
+2) primeiramente explicando de forma breve como cada tecnica funciona temos:
+fcfs - uma fila comum, sendo o primeiro a entrar o primeiro a sair (não é preempitivo)
+JMCP - os processos são alocados em uma fila ordenada pelo tempo de execução, sendo executado o job mais 
+curto primeiro e quando é adicionado outro processo a fila a fila deve ser ordenado novamente (não é 
+preempitivo)
+round-robin - fila circular não ordenada que cada processo é executado por uma certa quantidade de tempo, 
+denominado como quantum, que depois de executado e ainda não finalizado o processo volta ao final da fila (é 
+preempitivo)
+
+4) semafaros - Semáforos utilizam um contador para controlar o acesso a recursos compartilhados, evitando 
+condições de disputa. Eles garantem que múltiplos processos ou threads não acessem um recurso crítico ao 
+mesmo tempo.
+monitores - Monitores encapsulam recursos compartilhados e garantem que apenas um processo ou thread tenha 
+acesso a eles por vez, evitando condições de disputa de forma automática.
+
+5) a categoria de Escalonamento preempitivo tem como caracteristica principal um tempo definido que o 
+processo sera executado, ou seja, pode ser que ele não seja totalmente executado ate o seu fim. já o não 
+preempitivo assim que o processo começa a ser executado é executado ate o final 
