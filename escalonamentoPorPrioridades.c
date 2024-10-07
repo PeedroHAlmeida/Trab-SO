@@ -88,9 +88,7 @@ void executarProcesso(Processo *exec, int *numPrioridadeExec, int quantum, Fila 
     } else {
         printf("Tempo gasto até agora: %d | Processo %d de prioridade %d com tamanho %d em execução\n", temporizador, exec->numero, exec->prioridade, exec->tamanho);
         executa(exec, quantum);  // Chama a função executa corretamente
-        if (exec->prioridade == *numPrioridadeExec){
         adicionaFila(prioridade, *exec);  // Passa o ponteiro corretamente
-        } //preciso do cafe agora
         printf("Processo %d adicionado novamente à fila de prioridade %d\n\n", exec->numero, *numPrioridadeExec);
     }
 }
@@ -100,7 +98,7 @@ void imprimirFila(Fila *fila)
 {
     if (filaVazia(fila))
     {
-        printf("A fila vazia.\n");
+        printf("Fila vazia.\n");
         return;
     }
 
@@ -176,10 +174,6 @@ int main() {
             numPrioridadeExec = 1;
             exec = removeDaFila(&prioridade1);
             executarProcesso(exec, &numPrioridadeExec, quantum, &prioridade1, temporizador); 
-        }
-
-        if (temporizador % 10 == 0){
-            sobePrioridade(&prioridade4, &prioridade3, &prioridade2, &prioridade1);
         }
     }
     return 0;
